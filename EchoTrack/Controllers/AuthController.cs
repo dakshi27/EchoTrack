@@ -1,4 +1,5 @@
-﻿using EchoTrack.Api.Data;
+﻿using EchoTrack.Api.Authentication;
+using EchoTrack.Api.Data;
 using EchoTrack.Api.DTOs;
 using EchoTrack.Api.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,12 @@ namespace EchoTrack.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly JwtTokenService _jwtTokenService;
 
-        public AuthController(AppDbContext context)
+        public AuthController(AppDbContext context, JwtTokenService jwtTokenService)
         {
             _context = context;
+            _jwtTokenService = jwtTokenService;
         }
 
         [HttpPost("login")]
@@ -31,11 +34,11 @@ namespace EchoTrack.Api.Controllers
             if (!isValid)
                 return Unauthorized("Invalid credentials");
 
+            var token = _jwtTokenService.GenerateToken(user);
+
             return Ok(new
             {
-                message = "Login successful",
-                userId = user.Id,
-                role = user.Role
+                token
             });
         }
     }

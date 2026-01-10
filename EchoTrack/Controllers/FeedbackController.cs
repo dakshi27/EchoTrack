@@ -1,9 +1,11 @@
 ﻿using EchoTrack.Api.Models;
 using EchoTrack.Api.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EchoTrack.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FeedbackController : ControllerBase
@@ -36,8 +38,14 @@ namespace EchoTrack.Api.Controllers
 
         // POST: api/feedback
         [HttpPost]
+        [Authorize(Roles = "User")]
         public async Task<IActionResult> Create(Feedback feedback)
         {
+            var userId = int.Parse(User.FindFirst("UserId")!.Value);
+
+            feedback.CreatedBy = userId;
+            feedback.CreatedAt = DateTime.UtcNow;
+
             await _feedbackRepository.AddAsync(feedback);
             return CreatedAtAction(nameof(GetById), new { id = feedback.Id }, feedback);
         }
@@ -64,5 +72,20 @@ namespace EchoTrack.Api.Controllers
             await _feedbackRepository.DeleteAsync(feedback);
             return NoContent();
         }
+
+        [HttpPut("{id}/close")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CloseFeedback(int id)
+        {
+            var feedback = await _feedbackRepository.GetByIdAsync(id);
+            if (feedback == null)
+                return NotFound();
+
+            feedback.Status = "Closed";
+            await _feedbackRepository.UpdateAsync(feedback);
+
+            return NoContent();
+        }
+
     }
 }
