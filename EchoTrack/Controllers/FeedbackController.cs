@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EchoTrack.Api.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // All endpoints require authentication
     public class FeedbackController : ControllerBase
     {
         private readonly IFeedbackRepository _feedbackRepository;
@@ -17,16 +17,60 @@ namespace EchoTrack.Api.Controllers
             _feedbackRepository = feedbackRepository;
         }
 
-        // GET: api/feedback
+        // =========================
+        // USER ENDPOINTS
+        // =========================
+
+        /// <summary>
+        /// User: Create new feedback
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> Create(Feedback feedback)
+        {
+            var userId = int.Parse(User.FindFirst("UserId")!.Value);
+
+            feedback.CreatedBy = userId;
+            feedback.CreatedAt = DateTime.UtcNow;
+            feedback.Status = "Open";
+
+            await _feedbackRepository.AddAsync(feedback);
+            return CreatedAtAction(nameof(GetById), new { id = feedback.Id }, feedback);
+        }
+
+        /// <summary>
+        /// User: Get feedback created by the logged-in user
+        /// </summary>
+        [HttpGet("my")]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> GetMyFeedback()
+        {
+            var userId = int.Parse(User.FindFirst("UserId")!.Value);
+            var feedbacks = await _feedbackRepository.GetByUserIdAsync(userId);
+
+            return Ok(feedbacks);
+        }
+
+        // =========================
+        // ADMIN ENDPOINTS
+        // =========================
+
+        /// <summary>
+        /// Admin: View all feedback
+        /// </summary>
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
         {
             var feedbacks = await _feedbackRepository.GetAllAsync();
             return Ok(feedbacks);
         }
 
-        // GET: api/feedback/{id}
+        /// <summary>
+        /// Admin: Get feedback by id
+        /// </summary>
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetById(int id)
         {
             var feedback = await _feedbackRepository.GetByIdAsync(id);
@@ -36,22 +80,11 @@ namespace EchoTrack.Api.Controllers
             return Ok(feedback);
         }
 
-        // POST: api/feedback
-        [HttpPost]
-        [Authorize(Roles = "User")]
-        public async Task<IActionResult> Create(Feedback feedback)
-        {
-            var userId = int.Parse(User.FindFirst("UserId")!.Value);
-
-            feedback.CreatedBy = userId;
-            feedback.CreatedAt = DateTime.UtcNow;
-
-            await _feedbackRepository.AddAsync(feedback);
-            return CreatedAtAction(nameof(GetById), new { id = feedback.Id }, feedback);
-        }
-
-        // PUT: api/feedback/{id}
+        /// <summary>
+        /// Admin: Update feedback
+        /// </summary>
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, Feedback feedback)
         {
             if (id != feedback.Id)
@@ -61,8 +94,11 @@ namespace EchoTrack.Api.Controllers
             return NoContent();
         }
 
-        // DELETE: api/feedback/{id}
+        /// <summary>
+        /// Admin: Delete feedback
+        /// </summary>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var feedback = await _feedbackRepository.GetByIdAsync(id);
@@ -73,6 +109,9 @@ namespace EchoTrack.Api.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Admin: Close feedback
+        /// </summary>
         [HttpPut("{id}/close")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CloseFeedback(int id)
@@ -86,6 +125,5 @@ namespace EchoTrack.Api.Controllers
 
             return NoContent();
         }
-
     }
 }
