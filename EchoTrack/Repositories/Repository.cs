@@ -13,7 +13,7 @@ namespace EchoTrack.Api.Repositories
             _context = context;
             _dbSet = _context.Set<T>();
         }
-
+        // CRUD Operations
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
