@@ -28,3 +28,14 @@ appsettings.Local.json
 
 ## EF Core
 Migrations/*.Designer.cs
+
+## Angular / Node
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log*
+
+## Angular environment overrides (optional)
+environment.local.ts
+environment.dev.ts
