@@ -63,6 +63,6 @@ This structure ensures:
 
 ## Summary
 
-EchoTrack is a **backend-focused internal feedback system** built to demonstrate how real-world enterprise APIs are structured, secured, and maintained.  
-The project prioritizes **architecture quality, security, and clarity** over UI complexity.
+EchoTrack is a **feedback system** built to demonstrate how real-world enterprise APIs are structured, secured, and maintained.  
+The project prioritizes **architecture quality, security, and clarity**.
 
