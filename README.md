@@ -9,6 +9,8 @@ It represents a lightweight internal **ticketing / feedback system** used within
 
 EchoTrack allows users inside an organization to raise issues or feedback, and allows administrators to manage those issues securely.
 
+
+
 ### Typical Flow
 
 - A user logs in  
