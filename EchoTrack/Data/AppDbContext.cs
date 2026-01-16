@@ -16,7 +16,7 @@ namespace EchoTrack.Api.Data
         public DbSet<AdminStats> AdminStats { get; set; }
 
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder )
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>().HasData(
                 new User
