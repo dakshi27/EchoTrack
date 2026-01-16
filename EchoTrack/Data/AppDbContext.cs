@@ -13,6 +13,8 @@ namespace EchoTrack.Api.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<AdminStats> AdminStats { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
