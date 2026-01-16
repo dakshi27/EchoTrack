@@ -1,10 +1,13 @@
-﻿using EchoTrack.Api.Models;
-
-namespace EchoTrack.Api.Repositories
+﻿namespace EchoTrack.Api.Repositories
 {
-    public interface IFeedbackRepository : IRepository<Feedback>
+    public interface IRepository<T> where T : class
     {
-        Task<IEnumerable<Feedback>> GetByUserIdAsync(int userId);
-        Task<IEnumerable<Feedback>> GetByStatusAsync(string status);
+        Task<IEnumerable<T>> GetAllAsync();
+        Task<T?> GetByIdAsync(int id);
+
+        Task AddAsync(T entity);
+
+        void Update(T entity);   // ✔ Phase-2
+        void Delete(T entity);   // ✔ Phase-2
     }
 }

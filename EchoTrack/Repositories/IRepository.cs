@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace EchoTrack.Api.Repositories
+﻿namespace EchoTrack.Api.Repositories
 {
     public interface IRepository<T> where T : class
     {
@@ -8,7 +6,8 @@ namespace EchoTrack.Api.Repositories
         Task<T?> GetByIdAsync(int id);
 
         Task AddAsync(T entity);
-        Task UpdateAsync(T entity);
-        Task DeleteAsync(T entity);
+
+        void Update(T entity);   
+        void Delete(T entity);   
     }
 }
