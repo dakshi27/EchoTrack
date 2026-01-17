@@ -7,14 +7,14 @@ namespace EchoTrack.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // All endpoints require authentication
+    [Authorize]
     public class FeedbackController : ControllerBase
     {
-        private readonly IFeedbackRepository _feedbackRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public FeedbackController(IFeedbackRepository feedbackRepository)
+        public FeedbackController(IUnitOfWork unitOfWork)
         {
-            _feedbackRepository = feedbackRepository;
+            _unitOfWork = unitOfWork;
         }
 
         // =========================
@@ -34,19 +34,21 @@ namespace EchoTrack.Api.Controllers
             feedback.CreatedAt = DateTime.UtcNow;
             feedback.Status = "Open";
 
-            await _feedbackRepository.AddAsync(feedback);
+            await _unitOfWork.Feedbacks.AddAsync(feedback);
+            await _unitOfWork.CommitAsync();
+
             return CreatedAtAction(nameof(GetById), new { id = feedback.Id }, feedback);
         }
 
         /// <summary>
-        /// User: Get feedback created by the logged-in user
+        /// User: Get feedback created by logged-in user
         /// </summary>
         [HttpGet("my")]
         [Authorize(Roles = "User")]
         public async Task<IActionResult> GetMyFeedback()
         {
             var userId = int.Parse(User.FindFirst("UserId")!.Value);
-            var feedbacks = await _feedbackRepository.GetByUserIdAsync(userId);
+            var feedbacks = await _unitOfWork.Feedbacks.GetByUserIdAsync(userId);
 
             return Ok(feedbacks);
         }
@@ -62,7 +64,7 @@ namespace EchoTrack.Api.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
         {
-            var feedbacks = await _feedbackRepository.GetAllAsync();
+            var feedbacks = await _unitOfWork.Feedbacks.GetAllAsync();
             return Ok(feedbacks);
         }
 
@@ -73,7 +75,7 @@ namespace EchoTrack.Api.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetById(int id)
         {
-            var feedback = await _feedbackRepository.GetByIdAsync(id);
+            var feedback = await _unitOfWork.Feedbacks.GetByIdAsync(id);
             if (feedback == null)
                 return NotFound();
 
@@ -90,7 +92,9 @@ namespace EchoTrack.Api.Controllers
             if (id != feedback.Id)
                 return BadRequest();
 
-            await _feedbackRepository.UpdateAsync(feedback);
+            _unitOfWork.Feedbacks.Update(feedback);
+            await _unitOfWork.CommitAsync();
+
             return NoContent();
         }
 
@@ -101,28 +105,49 @@ namespace EchoTrack.Api.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var feedback = await _feedbackRepository.GetByIdAsync(id);
+            var feedback = await _unitOfWork.Feedbacks.GetByIdAsync(id);
             if (feedback == null)
                 return NotFound();
 
-            await _feedbackRepository.DeleteAsync(feedback);
+            _unitOfWork.Feedbacks.Delete(feedback);
+            await _unitOfWork.CommitAsync();
+
             return NoContent();
         }
 
         /// <summary>
-        /// Admin: Close feedback
+        /// Admin: Close feedback (Phase 2 entry point)
         /// </summary>
         [HttpPut("{id}/close")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CloseFeedback(int id)
         {
-            var feedback = await _feedbackRepository.GetByIdAsync(id);
+            var feedback = await _unitOfWork.Feedbacks.GetByIdAsync(id);
             if (feedback == null)
                 return NotFound();
 
             feedback.Status = "Closed";
-            await _feedbackRepository.UpdateAsync(feedback);
+            _unitOfWork.Feedbacks.Update(feedback);
 
+            var adminUserId = int.Parse(User.FindFirst("UserId")!.Value);
+
+            var stats = await _unitOfWork.AdminStats.GetByAdminIdAsync(adminUserId);
+            if (stats == null)
+            {
+                stats = new AdminStats
+                {
+                    AdminUserId = adminUserId,
+                    ClosedFeedbackCount = 1
+                };
+                await _unitOfWork.AdminStats.AddAsync(stats);
+            }
+            else
+            {
+                stats.ClosedFeedbackCount++;
+                _unitOfWork.AdminStats.Update(stats);
+            }
+
+            await _unitOfWork.CommitAsync();
             return NoContent();
         }
     }

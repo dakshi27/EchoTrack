@@ -1,4 +1,5 @@
 ﻿namespace EchoTrack.Api.Repositories
+//implementation of UOW pattern
 {
     public interface IUnitOfWork
     {
