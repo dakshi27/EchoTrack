@@ -34,6 +34,8 @@ Repository Interfaces
 ↓
 Repository Implementations
 ↓
+Unit of Work
+↓
 Entity Framework Core
 ↓
 SQL Server
@@ -61,6 +63,26 @@ This structure ensures:
   - `[Authorize(Roles = "Admin")]`
 - No manual role checks inside controller logic
 - The system is completely **stateless**
+
+## Unit of Work (Phase 2)
+
+### Why Unit of Work was introduced
+
+When a business operation affects multiple repositories, all changes must succeed or fail together.
+
+Example:
+- Admin closes a feedback
+- Admin statistics are updated
+
+Both operations must be committed as a single transaction.
+
+---
+
+### How Unit of Work Works
+
+- Repositories track changes
+- Unit of Work performs a single commit
+- All changes are saved together
 
 
 ## Summary
