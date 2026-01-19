@@ -76,7 +76,6 @@ Example:
 
 Both operations must be committed as a single transaction.
 
----
 
 ### How Unit of Work Works
 
