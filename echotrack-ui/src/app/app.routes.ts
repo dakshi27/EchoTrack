@@ -1,16 +1,16 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
-//import { LoginComponent } from './components/login/login.component';
-//import { FeedbackComponent } from './components/feedback/feedback.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { FeedbackListComponent } from './components/feedback-list/feedback-list.component';
 
 export const routes: Routes = [
   {
     path: 'login',
-    //component: LoginComponent
+    component: DashboardComponent
   },
   {
     path: 'feedback',
-   // component: FeedbackComponent,
+    component: FeedbackListComponent,
     canActivate: [authGuard]
   },
   {
