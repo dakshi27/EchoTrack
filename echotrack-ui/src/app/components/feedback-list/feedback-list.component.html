@@ -1,0 +1,8 @@
+<ul>
+  <li *ngFor="let feedback of feedbacks">
+    {{ feedback.title }}
+    <button (click)="selectFeedback(feedback.id)">
+      View
+    </button>
+  </li>
+</ul>
